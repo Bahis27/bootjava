@@ -1,0 +1,103 @@
+Index: pom.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/pom.xml b/pom.xml
+--- a/pom.xml	(revision 24f7e7fc8451a22eebdef8431f271b6b7fb52941)
++++ b/pom.xml	(date 1608304501478)
+@@ -48,6 +48,19 @@
+                     <scope>runtime</scope>
+                 </dependency>
+         -->
++
++        <!--Swagger-->
++        <dependency>
++            <groupId>io.springfox</groupId>
++            <artifactId>springfox-boot-starter</artifactId>
++            <version>3.0.0</version>
++        </dependency>
++        <dependency>
++            <groupId>io.springfox</groupId>
++            <artifactId>springfox-swagger-ui</artifactId>
++            <version>3.0.0</version>
++        </dependency>
++
+         <dependency>
+             <groupId>com.h2database</groupId>
+             <artifactId>h2</artifactId>
+Index: src/main/java/ru/javaops/bootjava/config/SpringFoxConfig.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/ru/javaops/bootjava/config/SpringFoxConfig.java b/src/main/java/ru/javaops/bootjava/config/SpringFoxConfig.java
+new file mode 100644
+--- /dev/null	(date 1608304157069)
++++ b/src/main/java/ru/javaops/bootjava/config/SpringFoxConfig.java	(date 1608304157069)
+@@ -0,0 +1,42 @@
++package ru.javaops.bootjava.config;
++
++import org.springframework.context.annotation.Bean;
++import org.springframework.context.annotation.Configuration;
++import springfox.documentation.builders.ApiInfoBuilder;
++import springfox.documentation.builders.RequestHandlerSelectors;
++import springfox.documentation.service.AuthorizationScope;
++import springfox.documentation.service.HttpAuthenticationScheme;
++import springfox.documentation.service.SecurityReference;
++import springfox.documentation.spi.DocumentationType;
++import springfox.documentation.spi.service.contexts.SecurityContext;
++import springfox.documentation.spring.web.plugins.Docket;
++
++import java.util.List;
++import java.util.function.Predicate;
++
++import static springfox.documentation.builders.PathSelectors.ant;
++
++@Configuration
++public class SpringFoxConfig {
++
++    @Bean
++    public Docket api() {
++        return new Docket(DocumentationType.OAS_30)
++                .select()
++                .apis(RequestHandlerSelectors.any())
++                .paths(ant("/api/**"))
++                .paths(Predicate.not(ant("/api/profile")))
++                .build()
++                .apiInfo(new ApiInfoBuilder()
++                        .title("REST API documentation")
++                        .description("Приложение по <a href='https://javaops.ru/view/bootjava'>курсу BootJava</a>")
++                        .version("1.0")
++                        .build())
++//                  .securitySchemes(List.of(new BasicAuth("basicAuth")))  // https://github.com/springfox/springfox/issues/3518
++                .securitySchemes(List.of(HttpAuthenticationScheme.BASIC_AUTH_BUILDER.name("basicAuth").build()))
++                .securityContexts(List.of(SecurityContext.builder()
++                        .securityReferences(List.of(new SecurityReference("basicAuth", new AuthorizationScope[0])))
++                        .build()
++                ));
++    }
++}
+Index: src/main/java/ru/javaops/bootjava/web/AccountController.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/ru/javaops/bootjava/web/AccountController.java b/src/main/java/ru/javaops/bootjava/web/AccountController.java
+--- a/src/main/java/ru/javaops/bootjava/web/AccountController.java	(revision 24f7e7fc8451a22eebdef8431f271b6b7fb52941)
++++ b/src/main/java/ru/javaops/bootjava/web/AccountController.java	(date 1608292506615)
+@@ -1,5 +1,6 @@
+ package ru.javaops.bootjava.web;
+ 
++import io.swagger.annotations.Api;
+ import lombok.AllArgsConstructor;
+ import lombok.extern.slf4j.Slf4j;
+ import org.springframework.data.rest.webmvc.RepositoryLinksResource;
+@@ -38,6 +39,7 @@
+ @RequestMapping("/api/account")
+ @AllArgsConstructor
+ @Slf4j
++@Api(tags="Account Controller")
+ public class AccountController implements RepresentationModelProcessor<RepositoryLinksResource> {
+     @SuppressWarnings("unchecked")
+     private static final RepresentationModelAssemblerSupport<User, EntityModel<User>> ASSEMBLER =
